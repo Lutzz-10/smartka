@@ -1,0 +1,13 @@
+<?php
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+
+class AiChatMessage extends Model
+{
+    protected $fillable = ['session_id', 'role', 'content', 'image_path', 'is_starred', 'feedback'];
+
+    protected $casts = ['is_starred' => 'boolean'];
+
+    public function session() { return $this->belongsTo(AiChatSession::class, 'session_id'); }
+}
