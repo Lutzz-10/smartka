@@ -58,7 +58,7 @@
         ['admin/soal',       '📝', 'Bank Soal',      'admin.soal.index'],
         ['admin/paket',      '📦', 'Paket Latihan',  'admin.paket.index'],
         ['admin/pengguna',   '👥', 'Pengguna',       'admin.pengguna.index'],
-        ['admin/ai-monitor', '🤖', 'AI Monitor',     'admin.ai-monitor'],
+        ['admin/ai-monitor', '🤖', 'AI Monitor',     'admin.ai-monitor.index'],
       ] as [$path, $icon, $label, $routeName])
       <a href="{{ route($routeName) }}"
         class="admin-link flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-gray-300 transition

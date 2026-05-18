@@ -71,8 +71,8 @@
   </div>
 
   {{-- KANAN: Form Register --}}
-  <div class="w-full lg:w-2/5 flex items-center justify-center p-8 bg-white overflow-y-auto max-h-screen">
-    <div class="w-full max-w-md py-8">
+  <div class="w-full lg:w-2/5 flex items-start justify-center p-8 bg-white overflow-y-auto h-screen py-12 lg:py-16">
+    <div class="w-full max-w-md">
 
       {{-- Logo mobile --}}
       <div class="flex items-center gap-2 mb-8 lg:hidden justify-center">
@@ -275,11 +275,7 @@
 
       </form>
 
-      <div class="my-5 flex items-center gap-3">
-        <div class="flex-1 h-px bg-gray-200"></div>
-        <span class="text-xs text-gray-400">atau</span>
-        <div class="flex-1 h-px bg-gray-200"></div>
-      </div>
+    
 
       <p class="text-center text-xs text-gray-400 mt-6">
         Dengan mendaftar, kamu menyetujui

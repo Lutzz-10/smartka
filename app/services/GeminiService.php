@@ -117,25 +117,46 @@ FORMAT RESPONS:
 
         $url = $this->baseUrl . $this->model . ':generateContent?key=' . $this->apiKey;
 
-        try {
-            $response = Http::timeout(30)->post($url, [
-                'contents'         => $contents,
-                'generationConfig' => [
-                    'temperature'     => 0.7,
-                    'maxOutputTokens' => 1024,
-                    'topP'            => 0.95,
-                    'topK'            => 40,
-                ],
-                'safetySettings'   => [
-                    ['category' => 'HARM_CATEGORY_HARASSMENT',        'threshold' => 'BLOCK_MEDIUM_AND_ABOVE'],
-                    ['category' => 'HARM_CATEGORY_HATE_SPEECH',       'threshold' => 'BLOCK_MEDIUM_AND_ABOVE'],
-                    ['category' => 'HARM_CATEGORY_SEXUALLY_EXPLICIT', 'threshold' => 'BLOCK_MEDIUM_AND_ABOVE'],
-                    ['category' => 'HARM_CATEGORY_DANGEROUS_CONTENT', 'threshold' => 'BLOCK_MEDIUM_AND_ABOVE'],
-                ],
-            ]);
-        } catch (\Exception $e) {
-            Log::error('Gemini HTTP error', ['message' => $e->getMessage()]);
-            throw new \Exception('Koneksi ke Smartka AI gagal. Periksa koneksi internetmu ya!');
+        $maxRetries = 3;
+        $retryDelay = 2; // seconds
+        $response   = null;
+
+        for ($attempt = 1; $attempt <= $maxRetries; $attempt++) {
+            try {
+                $response = Http::timeout(30)->post($url, [
+                    'contents'         => $contents,
+                    'generationConfig' => [
+                        'temperature'     => 0.7,
+                        'maxOutputTokens' => 1024,
+                        'topP'            => 0.95,
+                        'topK'            => 40,
+                    ],
+                    'safetySettings'   => [
+                        ['category' => 'HARM_CATEGORY_HARASSMENT',        'threshold' => 'BLOCK_MEDIUM_AND_ABOVE'],
+                        ['category' => 'HARM_CATEGORY_HATE_SPEECH',       'threshold' => 'BLOCK_MEDIUM_AND_ABOVE'],
+                        ['category' => 'HARM_CATEGORY_SEXUALLY_EXPLICIT', 'threshold' => 'BLOCK_MEDIUM_AND_ABOVE'],
+                        ['category' => 'HARM_CATEGORY_DANGEROUS_CONTENT', 'threshold' => 'BLOCK_MEDIUM_AND_ABOVE'],
+                    ],
+                ]);
+
+                // Jika status 429 (Rate Limit) dan belum retry terakhir
+                if ($response->status() === 429 && $attempt < $maxRetries) {
+                    Log::warning("Gemini API rate limited (429). Retrying in {$retryDelay}s...");
+                    sleep($retryDelay);
+                    $retryDelay *= 2;
+                    continue;
+                }
+
+                break; // Keluar dari loop jika berhasil atau gagal karena alasan selain 429
+            } catch (\Exception $e) {
+                if ($attempt === $maxRetries) {
+                    Log::error('Gemini HTTP error', ['message' => $e->getMessage()]);
+                    throw new \Exception('Koneksi ke Smartka AI gagal. Periksa koneksi internetmu ya!');
+                }
+                Log::warning("Gemini HTTP connection error. Retrying in {$retryDelay}s...", ['error' => $e->getMessage()]);
+                sleep($retryDelay);
+                $retryDelay *= 2;
+            }
         }
 
         if ($response->failed()) {
@@ -180,5 +201,84 @@ FORMAT RESPONS:
         } catch (\Exception $e) {
             return false;
         }
+    }
+
+    // ── Parse Soal dari Teks (PDF/DOCX) ───────────────────
+    public function parseQuestions(string $text): array
+    {
+        if (empty($this->apiKey)) {
+            throw new \Exception('Gemini API key belum dikonfigurasi.');
+        }
+
+        $systemPrompt = "Anda adalah asisten AI yang bertugas mengekstrak soal-soal pilihan ganda dari teks mentah ke dalam format JSON array yang ketat.
+Aturan:
+1. Ekstrak HANYA soal pilihan ganda.
+2. Setiap objek dalam array harus memiliki kunci persis seperti berikut:
+   - \"question_text\" (string)
+   - \"option_a\" (string)
+   - \"option_b\" (string)
+   - \"option_c\" (string)
+   - \"option_d\" (string)
+   - \"option_e\" (string, bisa null jika hanya sampai D)
+   - \"correct_answer\" (string: 'a', 'b', 'c', 'd', atau 'e'. HANYA SATU HURUF KECIL. Jika teks asli tidak menyebutkan jawaban benar, isi dengan 'a' sebagai default).
+   - \"explanation_text\" (string, penjelasan dari soal jika ada. Jika tidak ada, isi dengan null).
+3. Jangan mengembalikan teks apapun selain array JSON murni.
+4. Format respon HANYA array JSON, tanpa backticks Markdown (```json ... ```).";
+
+        $url = $this->baseUrl . $this->model . ':generateContent?key=' . $this->apiKey;
+
+        $maxRetries = 3;
+        $retryDelay = 2; // seconds
+        $response   = null;
+
+        for ($attempt = 1; $attempt <= $maxRetries; $attempt++) {
+            try {
+                $response = Http::timeout(60)->post($url, [
+                    'contents' => [
+                        [
+                            'role'  => 'user',
+                            'parts' => [
+                                ['text' => $systemPrompt . "\n\nBerikut adalah teks mentahnya:\n" . substr($text, 0, 30000)], // limit length to avoid token limits
+                            ],
+                        ]
+                    ],
+                    'generationConfig' => [
+                        'temperature'     => 0.2, // low temp for deterministic JSON
+                        'responseMimeType'=> 'application/json',
+                    ],
+                ]);
+
+                if ($response->status() === 429 && $attempt < $maxRetries) {
+                    sleep($retryDelay);
+                    $retryDelay *= 2;
+                    continue;
+                }
+
+                break;
+            } catch (\Exception $e) {
+                if ($attempt === $maxRetries) {
+                    throw new \Exception('Koneksi ke Smartka AI gagal saat mengekstrak soal.');
+                }
+                sleep($retryDelay);
+                $retryDelay *= 2;
+            }
+        }
+
+        if ($response->failed()) {
+            throw new \Exception('Gagal memproses soal via AI: ' . ($response->json('error.message') ?? 'Unknown error'));
+        }
+
+        $reply = $response->json('candidates.0.content.parts.0.text');
+
+        if (empty($reply)) {
+            throw new \Exception('AI tidak mengembalikan data soal.');
+        }
+
+        $decoded = json_decode($reply, true);
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            throw new \Exception('AI mengembalikan format JSON yang tidak valid.');
+        }
+
+        return $decoded;
     }
 }

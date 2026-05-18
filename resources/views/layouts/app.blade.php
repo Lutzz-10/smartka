@@ -70,7 +70,7 @@
         ['latihan',          '📝', 'Latihan Soal',  '#'],
         ['tryout',           '⏱️', 'Try Out',        '#'],
         ['laporan',          '📊', 'Laporan',        '#'],
-        ['ai',               '🤖', 'AI Tutor',       '#'],
+        ['ai',               '🤖', 'AI Tutor',       route('ai.tutor')],
         ['pembahasan',       '📖', 'Pembahasan',     '#'],
         ['peringkat',        '🏆', 'Peringkat',      '#'],
         ['akun',             '⚙️', 'Pengaturan',     '#'],

@@ -69,6 +69,11 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(fun
     Route::get('/paket', [AdminPackageController::class, 'index'])->name('paket.index');
     Route::get('/paket/tambah', [AdminPackageController::class, 'create'])->name('paket.create');
     Route::post('/paket', [AdminPackageController::class, 'store'])->name('paket.store');
+    
+    // Paket Import via Excel
+    Route::get('/paket/import/template', [AdminPackageController::class, 'downloadTemplate'])->name('paket.import.template');
+    Route::get('/paket/import', [AdminPackageController::class, 'importForm'])->name('paket.import');
+    Route::post('/paket/import', [AdminPackageController::class, 'importProcess'])->name('paket.import.process');
 
     // Pengguna
     Route::get('/pengguna', [AdminUserController::class, 'index'])->name('pengguna.index');

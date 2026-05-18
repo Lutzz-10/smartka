@@ -4,46 +4,52 @@
 
 @section('content')
 <div class="space-y-6">
-    <div class="flex items-center justify-between">
-        <h1 class="text-xl font-bold text-white">Paket Latihan</h1>
-        <a href="{{ route('admin.paket.create') }}"
-           class="bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold px-4 py-2 rounded-xl transition">
-            + Tambah Paket
-        </a>
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <h1 class="text-xl font-bold text-gray-800">Paket Latihan</h1>
+        <div class="flex items-center gap-3">
+            <a href="{{ route('admin.paket.import') }}"
+               class="bg-green-600 hover:bg-green-700 text-white text-sm font-semibold px-4 py-2 rounded-xl transition flex items-center gap-2">
+                <span>📊</span> Import via Excel
+            </a>
+            <a href="{{ route('admin.paket.create') }}"
+               class="bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-4 py-2 rounded-xl transition">
+                + Tambah Paket
+            </a>
+        </div>
     </div>
 
-    <div class="bg-gray-800 rounded-2xl overflow-hidden">
+    <div class="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm">
         <table class="w-full text-sm">
             <thead>
-                <tr class="border-b border-gray-700 text-left">
-                    <th class="px-5 py-3 text-gray-400 font-medium">Judul</th>
-                    <th class="px-5 py-3 text-gray-400 font-medium">Kelas</th>
-                    <th class="px-5 py-3 text-gray-400 font-medium">Jumlah Soal</th>
-                    <th class="px-5 py-3 text-gray-400 font-medium">Tipe</th>
-                    <th class="px-5 py-3 text-gray-400 font-medium">Status</th>
-                    <th class="px-5 py-3 text-gray-400 font-medium">Aksi</th>
+                <tr class="border-b border-gray-100 text-left bg-gray-50">
+                    <th class="px-5 py-3 text-gray-600 font-semibold">Judul Paket</th>
+                    <th class="px-5 py-3 text-gray-600 font-semibold">Kelas</th>
+                    <th class="px-5 py-3 text-gray-600 font-semibold">Jumlah Soal</th>
+                    <th class="px-5 py-3 text-gray-600 font-semibold">Tipe</th>
+                    <th class="px-5 py-3 text-gray-600 font-semibold">Status</th>
+                    <th class="px-5 py-3 text-gray-600 font-semibold">Aksi</th>
                 </tr>
             </thead>
-            <tbody class="divide-y divide-gray-700">
+            <tbody class="divide-y divide-gray-100">
                 @forelse($packages as $package)
-                    <tr class="hover:bg-gray-750 transition">
-                        <td class="px-5 py-3 text-white font-medium">{{ $package->title }}</td>
-                        <td class="px-5 py-3 text-gray-300">Kelas {{ $package->grade_level }}</td>
-                        <td class="px-5 py-3 text-gray-300">{{ $package->questions_count ?? $package->questions->count() }} soal</td>
-                        <td class="px-5 py-3">
-                            <span class="px-2 py-0.5 rounded-full text-xs font-semibold
-                                {{ $package->type === 'premium' ? 'bg-yellow-500/20 text-yellow-400' : 'bg-gray-600 text-gray-300' }}">
-                                {{ $package->type === 'premium' ? 'Premium' : 'Gratis' }}
+                    <tr class="hover:bg-gray-50 transition">
+                        <td class="px-5 py-4 text-gray-800 font-semibold">{{ $package->name }}</td>
+                        <td class="px-5 py-4 text-gray-600">Kelas {{ $package->class_level }}</td>
+                        <td class="px-5 py-4 text-gray-600">{{ $package->total_questions }} soal</td>
+                        <td class="px-5 py-4">
+                            <span class="px-2 py-1 rounded-full text-xs font-bold
+                                {{ $package->type === 'premium' ? 'bg-yellow-100 text-yellow-700' : 'bg-green-100 text-green-700' }}">
+                                {{ strtoupper($package->type) }}
                             </span>
                         </td>
-                        <td class="px-5 py-3">
-                            <span class="px-2 py-0.5 rounded-full text-xs font-semibold
-                                {{ $package->is_active ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400' }}">
-                                {{ $package->is_active ? 'Aktif' : 'Nonaktif' }}
+                        <td class="px-5 py-4">
+                            <span class="px-2 py-1 rounded-full text-xs font-bold
+                                {{ $package->status === 'published' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600' }}">
+                                {{ strtoupper($package->status) }}
                             </span>
                         </td>
-                        <td class="px-5 py-3">
-                            <a href="#" class="text-indigo-400 hover:text-indigo-300 text-xs font-medium">Edit</a>
+                        <td class="px-5 py-4">
+                            <a href="#" class="text-blue-600 hover:text-blue-800 font-semibold text-sm">Edit</a>
                         </td>
                     </tr>
                 @empty
