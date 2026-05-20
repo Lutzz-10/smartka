@@ -8,7 +8,7 @@ use App\Models\Setting;
 
 class GeminiService
 {
-    private string $apiKey;
+    private ?string $apiKey;
     private string $model;
     private string $baseUrl;
 
@@ -16,8 +16,7 @@ class GeminiService
     {
         $this->apiKey  = config('services.gemini.api_key');
         $this->model   = config('services.gemini.model', 'gemini-2.0-flash');
-        $this->baseUrl = config('services.gemini.base_url',
-            'https://generativelanguage.googleapis.com/v1beta/models/');
+        $this->baseUrl = config('services.gemini.base_url') ?? 'https://generativelanguage.googleapis.com/v1beta/models/';
     }
 
     // ─── Build system prompt ───────────────────────────────

@@ -13,6 +13,10 @@ use App\Http\Controllers\Admin\AiMonitorController;
 use App\Http\Controllers\Admin\AdminPackageController;
 use App\Http\Controllers\Student\PackageController;
 use App\Http\Controllers\Student\SessionController;
+use App\Http\Controllers\Student\ReportController;
+use App\Http\Controllers\Student\PembahasanController;
+use App\Http\Controllers\Student\LeaderboardController;
+use App\Http\Controllers\Student\AccountController;
 
 // ── Public ──────────────────────────────────────────
 Route::get('/', fn() => view('landing.index'))->name('home');
@@ -54,7 +58,21 @@ Route::middleware('auth')->group(function () {
         // Latihan Soal
         Route::get('/latihan',                 [PackageController::class, 'index'])->name('latihan.index');
         Route::get('/latihan/{package}',        [PackageController::class, 'show'])->name('latihan.show');
-        });
+
+        // Laporan
+        Route::get('/laporan',                 [ReportController::class, 'index'])->name('laporan.index');
+
+        // Pembahasan
+        Route::get('/pembahasan',              [PembahasanController::class, 'index'])->name('pembahasan.index');
+
+        // Peringkat
+        Route::get('/peringkat',               [LeaderboardController::class, 'index'])->name('peringkat.index');
+
+        // Pengaturan Akun
+        Route::get('/akun',                    [AccountController::class, 'show'])->name('akun.show');
+        Route::post('/akun/update',            [AccountController::class, 'updateProfile'])->name('akun.update-profile');
+        Route::post('/akun/update-password',   [AccountController::class, 'updatePassword'])->name('akun.update-password');
+    });
 
 Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(function () {
     Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');

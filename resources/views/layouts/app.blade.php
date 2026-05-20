@@ -6,6 +6,17 @@
   <meta name="csrf-token" content="{{ csrf_token() }}">
   <title>@yield('title', 'Dashboard') — SMARTKA</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+    }
+    // Prevent Flash of Unstyled Content (FOUC)
+    if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        document.documentElement.classList.add('dark');
+    } else {
+        document.documentElement.classList.remove('dark');
+    }
+  </script>
   <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
@@ -58,30 +69,20 @@
 
     {{-- Menu --}}
     <nav class="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
-      @php
-        $currentRoute = request()->routeIs('dashboard') ? 'dashboard' :
-          (str_starts_with(request()->path(), 'latihan') ? 'latihan' :
-          (str_starts_with(request()->path(), 'ai') ? 'ai' :
-          (str_starts_with(request()->path(), 'laporan') ? 'laporan' : '')));
-      @endphp
-
       @foreach([
-        ['dashboard',        '🏠', 'Beranda',       route('dashboard')],
-        ['latihan',          '📝', 'Latihan Soal',  '#'],
-        ['tryout',           '⏱️', 'Try Out',        '#'],
-        ['laporan',          '📊', 'Laporan',        '#'],
-        ['ai',               '🤖', 'AI Tutor',       route('ai.tutor')],
-        ['pembahasan',       '📖', 'Pembahasan',     '#'],
-        ['peringkat',        '🏆', 'Peringkat',      '#'],
-        ['akun',             '⚙️', 'Pengaturan',     '#'],
-      ] as [$key, $icon, $label, $href])
+        ['dashboard',        '🏠', 'Beranda',       route('dashboard'),        'dashboard'],
+        ['latihan',          '📝', 'Latihan Soal',  route('latihan.index'),    'latihan.*'],
+        ['tryout',           '⏱️', 'Try Out',        '#',                       'tryout.*'],
+        ['laporan',          '📊', 'Laporan',        route('laporan.index'),    'laporan.*'],
+        ['ai',               '🤖', 'AI Tutor',       route('ai.tutor'),         'ai.*'],
+        ['pembahasan',       '📖', 'Pembahasan',     route('pembahasan.index'), 'pembahasan.*'],
+        ['peringkat',        '🏆', 'Peringkat',      route('peringkat.index'),  'peringkat.*'],
+        ['akun',             '⚙️', 'Pengaturan',     route('akun.show'),        'akun.*'],
+      ] as [$key, $icon, $label, $href, $pattern])
       <a href="{{ $href }}"
-        class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-gray-600 transition {{ $currentRoute === $key ? 'active' : '' }}">
+        class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition {{ request()->routeIs($pattern) ? 'active bg-blue-50 text-blue-600 font-semibold' : 'text-gray-600 hover:bg-gray-50' }}">
         <span class="text-lg w-6 text-center">{{ $icon }}</span>
         <span>{{ $label }}</span>
-        @if($key === 'ai')
-        <span class="ml-auto text-xs bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded font-semibold">AI</span>
-        @endif
       </a>
       @endforeach
     </nav>
@@ -180,9 +181,6 @@
   @auth
     @include('components.ai-chat-widget')
   @endauth
-
-</body>
-</html>
 
 </body>
 </html>
