@@ -15,6 +15,7 @@ class DatabaseSeeder extends Seeder
             SubjectSeeder::class,
             SettingSeeder::class,
             LatihanSeeder::class,
+            QuestionSeeder::class,
         ]);
 }
 }
