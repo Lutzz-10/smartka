@@ -49,7 +49,16 @@
             promo_code: this.promo,
           }),
         });
-        const data = await res.json();
+        
+        const textData = await res.text();
+        let data;
+        try {
+          data = JSON.parse(textData);
+        } catch (err) {
+          alert('Error Parsing JSON. Server membalas: ' + textData.substring(0, 100));
+          this.loading = false;
+          return;
+        }
 
         // Dev mode fallback
         if (data.redirect) {
@@ -61,7 +70,6 @@
         if (data.snap_token) {
           window.snap.pay(data.snap_token, {
             onSuccess: (result) => {
-              // Kirim ke finish handler: aktifkan subscription → dashboard
               window.location.href = '{{ url('/payment/finish') }}/' + data.payment_id
                 + '?transaction_status=' + (result.transaction_status || 'settlement')
                 + '&transaction_id=' + (result.transaction_id || '');
@@ -78,12 +86,12 @@
               this.loading = false;
             },
           });
-        } else if (data.error) {
-          alert(data.error);
+        } else if (data.error || data.message) {
+          alert(data.error || data.message);
           this.loading = false;
         }
       } catch (e) {
-        alert('Terjadi kesalahan koneksi. Silakan coba lagi.');
+        alert('Terjadi kesalahan: ' + e.message);
         this.loading = false;
       }
     }

@@ -189,15 +189,10 @@
 
                 {{-- Tombol Hapus Foto (hanya muncul jika user sudah punya avatar) --}}
                 @if($user->avatar)
-                <form action="{{ route('akun.remove-avatar') }}" method="POST" class="mt-3"
-                      onsubmit="return confirm('Hapus foto profil? Tindakan ini tidak bisa dibatalkan.')">
-                  @csrf
-                  @method('DELETE')
-                  <button type="submit"
-                    class="inline-flex items-center gap-1.5 text-xs text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 font-semibold transition">
+                  <button type="button" onclick="if(confirm('Hapus foto profil? Tindakan ini tidak bisa dibatalkan.')) document.getElementById('remove-avatar-form').submit();"
+                    class="mt-3 inline-flex items-center gap-1.5 text-xs text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 font-semibold transition">
                     🗑️ Hapus Foto Profil
                   </button>
-                </form>
                 @endif
               </div>
             </div>
@@ -209,6 +204,13 @@
               </button>
             </div>
           </form>
+
+          @if($user->avatar)
+          <form id="remove-avatar-form" action="{{ route('akun.remove-avatar') }}" method="POST" class="hidden">
+              @csrf
+              @method('DELETE')
+          </form>
+          @endif
         </div>
 
         {{-- ── TAB 2: PASSWORD FORM ── --}}

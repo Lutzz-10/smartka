@@ -28,6 +28,33 @@ Route::get('/', fn() => view('landing.index'))->name('home');
 Route::view('/syarat-ketentuan', 'pages.terms')->name('terms');
 Route::view('/kebijakan-privasi', 'pages.privacy')->name('privacy');
 
+Route::get('/clear-cache', function() {
+    \Illuminate\Support\Facades\Artisan::call('optimize:clear');
+    return 'Cache cleared successfully!';
+});
+
+Route::get('/test-midtrans', function() {
+    try {
+        \Midtrans\Config::$serverKey = config('services.midtrans.server_key');
+        \Midtrans\Config::$clientKey = config('services.midtrans.client_key');
+        \Midtrans\Config::$isProduction = config('services.midtrans.is_production');
+        
+        $snapToken = \Midtrans\Snap::getSnapToken([
+            'transaction_details' => [
+                'order_id' => 'TEST-' . time(),
+                'gross_amount' => 10000,
+            ],
+            'customer_details' => [
+                'first_name' => 'Test',
+                'email' => 'test@example.com',
+            ]
+        ]);
+        return "BERHASIL KONEK KE MIDTRANS! Snap Token: " . $snapToken;
+    } catch (\Exception $e) {
+        return "ERROR MIDTRANS: " . $e->getMessage();
+    }
+});
+
 Route::middleware('guest')->group(function () {
     Route::get('/login',                  [AuthController::class, 'showLogin'])->name('login');
     Route::post('/login',                 [AuthController::class, 'login'])->name('login.post');
