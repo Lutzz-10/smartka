@@ -54,11 +54,12 @@
                             <template x-for="optionKey in ['a', 'b', 'c', 'd', 'e']" :key="optionKey">
                                 <label x-show="question['option_' + optionKey]" 
                                     class="flex items-center p-4 border rounded-xl cursor-pointer transition-all"
-                                    :class="getAnswer(question.id) === optionKey ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30 dark:border-blue-500' : 'border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'">
+                                    :class="getAnswer(question.id) === optionKey ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30 dark:border-blue-500' : 'border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'"
+                                    @click="saveAnswer(question.id, optionKey)">
                                     
                                     <input type="radio" :name="'question_' + question.id" :value="optionKey" class="w-4 h-4 text-blue-600 border-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:ring-blue-500"
                                         :checked="getAnswer(question.id) === optionKey"
-                                        @change="saveAnswer(question.id, optionKey)">
+                                        @click.stop="saveAnswer(question.id, optionKey)">
                                     
                                     <span class="ml-3 font-semibold text-gray-700 dark:text-gray-300 uppercase" x-text="optionKey + '.'"></span>
                                     <span class="ml-2 text-gray-600 dark:text-gray-400" x-html="question['option_' + optionKey]"></span>
@@ -73,10 +74,11 @@
                             <textarea 
                                 class="w-full border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 rounded-xl p-4 focus:ring-2 focus:ring-blue-500 min-h-[150px] transition-all"
                                 placeholder="Ketik jawabanmu di sini..."
-                                :value="getAnswer(question.id)"
-                                @change="saveAnswer(question.id, $event.target.value)"
+                                x-effect="$el.value = getAnswer(question.id) || ''"
+                                @input="saveAnswer(question.id, $event.target.value)"
+                                @blur="saveAnswer(question.id, $event.target.value)"
                             ></textarea>
-                            <p class="text-xs text-gray-400 mt-2">Jawaban akan otomatis tersimpan saat kamu berpindah soal atau klik di luar kotak teks.</p>
+                            <p class="text-xs text-gray-400 mt-2">Jawaban otomatis tersimpan saat kamu mengetik.</p>
                         </div>
                     </template>
                 </div>
@@ -135,7 +137,7 @@
 </div>
 
 <!-- Modal Konfirmasi -->
-<div id="finishModal" class="hidden fixed inset-0 z-50 bg-gray-900 bg-opacity-50 flex items-center justify-center">
+<div id="finishModal" x-data="{ isSubmitting: false }" class="hidden fixed inset-0 z-50 bg-gray-900 bg-opacity-50 flex items-center justify-center">
     <div class="bg-white dark:bg-gray-800 rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl">
         <div class="text-center mb-6">
             <div class="w-16 h-16 bg-blue-100 dark:bg-blue-900/50 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl">🏁</div>
